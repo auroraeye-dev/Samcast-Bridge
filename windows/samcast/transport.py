@@ -1,5 +1,13 @@
 """The cross-platform transport: UDP discovery plus one TCP connection per peer.
 
+Sockets only, so that any language can implement the other end.
+Anything Apple-specific would defeat the entire purpose of this module.
+Two peers find each other by broadcast, then exactly one of them dials.
+Very little state is kept: who was heard from, and who is connected.
+In-flight dials are tracked, or the tick opens a second connection.
+Keeping the wire format in wire.py leaves this file about sockets alone.
+
+
 Counterpart to `mac/Sources/QuackBridge/LANTransport.swift`. Both implement
 docs/PROTOCOL.md; neither imports anything the other platform could not.
 

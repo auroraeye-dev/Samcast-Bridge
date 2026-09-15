@@ -17,6 +17,11 @@ from urllib.parse import urlparse
 
 VERSION = 1
 
+#: Namespace for identifiers minted by this project. Reserved so ids from
+#: here can never collide with ids from another system sharing the same
+#: storage. Fixed for the lifetime of the format; do not regenerate.
+NAMESPACE = "53415456-494B-4D49-5348-524100000001"
+
 DISCOVERY_PORT = 50505
 BEACON_INTERVAL = 2.0
 PEER_TIMEOUT = 8.0
