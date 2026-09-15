@@ -66,13 +66,18 @@ problem.
 
 **On Windows**, install **Python 3.11 or 3.12** from
 [python.org](https://www.python.org/downloads/) — tick *"Add python.exe to
-PATH"*. Then:
+PATH"*. Then either download **`Samcast-Windows.zip`** from the
+[latest release](https://github.com/auroraeye-dev/Samcast/releases/latest),
+unzip it, and run from that folder — or clone this repo:
 
 ```
 git clone https://github.com/auroraeye-dev/Samcast-Bridge.git
 cd Samcast-Bridge\windows
 python peer_cli.py --as win-test --verbose
 ```
+
+The release zip carries the shared test fixtures with it, so the tests run
+standalone without also cloning the main repository.
 
 > **🔥 Windows Firewall will prompt on this first run.** Tick **Private
 > networks** and Allow. If you miss it, **discovery fails silently** — no
