@@ -210,6 +210,88 @@ class IncomingPayloads(unittest.TestCase):
                                  "the receiver must not hand this to the OS")
 
 
+class MeetingConfirmation(unittest.TestCase):
+    """A misread fist on an ordinary page costs a reopened tab. On a live
+    call it drops you out of the meeting, so that one gets asked about."""
+
+    MEET = Page("https://meet.google.com/abc-defg-hij", "Standup")
+    ORDINARY = Page("https://example.com/article", "Article")
+
+    def test_an_ordinary_page_is_never_questioned(self):
+        session, transport, _ = make(page=self.ORDINARY)
+        transport.connect(MAC)
+        session.grab()
+        self.assertFalse(session.is_asking)
+        self.assertIsNotNone(session.holding)
+        self.assertIn("sourceAvailable", transport.controls())
+
+    def test_a_meeting_is_not_offered_until_confirmed(self):
+        session, transport, hooks = make(page=self.MEET)
+        transport.connect(MAC)
+        session.grab()
+
+        self.assertTrue(session.is_asking)
+        self.assertIsNone(session.holding, "nothing is held yet")
+        self.assertEqual(transport.sent, [], "and nothing is announced")
+        self.assertEqual(hooks.closed, 0, "and above all, nothing is closed")
+
+    def test_confirming_proceeds_normally(self):
+        session, transport, _ = make(page=self.MEET)
+        transport.connect(MAC)
+        session.grab()
+        session.confirm_grab()
+
+        self.assertFalse(session.is_asking)
+        self.assertIsNotNone(session.holding)
+        self.assertIn("sourceAvailable", transport.controls())
+
+    def test_declining_leaves_everything_alone(self):
+        session, transport, hooks = make(page=self.MEET)
+        transport.connect(MAC)
+        session.grab()
+        session.decline_grab()
+
+        self.assertFalse(session.is_asking)
+        self.assertIsNone(session.holding)
+        self.assertEqual(transport.sent, [])
+        self.assertEqual(hooks.closed, 0)
+
+    def test_silence_means_no(self):
+        """Someone who did not mean to make that gesture will not reach for
+        a button, so the timeout must cancel rather than proceed."""
+        original = session_module.CONFIRM_TIMEOUT
+        session_module.CONFIRM_TIMEOUT = 0.15
+        try:
+            session, transport, hooks = make(page=self.MEET)
+            transport.connect(MAC)
+            session.grab()
+            time.sleep(0.4)
+            self.assertFalse(session.is_asking)
+            self.assertIsNone(session.holding)
+            self.assertEqual(hooks.closed, 0)
+            self.assertEqual(transport.sent, [])
+        finally:
+            session_module.CONFIRM_TIMEOUT = original
+
+    def test_waving_again_does_not_stack_a_second_prompt(self):
+        session, transport, _ = make(page=self.MEET)
+        transport.connect(MAC)
+        session.handle_gesture("closedHand")
+        first = session.pending_confirmation
+        session.handle_gesture("closedHand")
+        self.assertIs(session.pending_confirmation, first)
+
+    def test_auto_confirm_skips_the_question(self):
+        """The headless peer can be told to stop asking, for scripted use."""
+        transport = FakeTransport()
+        hooks = FakeHooks(self.MEET)
+        session = BridgeSession(transport, hooks, _scratch_trust(), auto_confirm=True)
+        transport.connect(MAC)
+        session.grab()
+        self.assertFalse(session.is_asking)
+        self.assertIsNotNone(session.holding)
+
+
 class Gestures(unittest.TestCase):
     def test_a_fist_grabs_and_an_open_hand_takes(self):
         session, transport, hooks = make(page=Page("https://example.com", "Example"))

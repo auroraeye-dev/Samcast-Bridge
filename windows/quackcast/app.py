@@ -132,6 +132,21 @@ class QuackCastApp:
         self._button(trust_buttons, "Allow", self.session.approve_pending).pack(side="left", expand=True, fill="x", padx=(0, 4))
         self._button(trust_buttons, "Not now", self.session.reject_pending).pack(side="left", expand=True, fill="x", padx=(4, 0))
 
+        # Shown only when a fist lands on something that would hurt to lose
+        # by accident — a live meeting, above all. Placed above the peer list
+        # so it cannot be missed.
+        self.confirm_frame = tk.Frame(self.root, bg=PANEL,
+                                      highlightthickness=1, highlightbackground=AMBER)
+        self.confirm_label = tk.Label(self.confirm_frame, text="", bg=PANEL, fg=TEXT,
+                                      font=("Segoe UI", 10), wraplength=340, justify="left")
+        self.confirm_label.pack(fill="x", padx=12, pady=(10, 6))
+        confirm_buttons = tk.Frame(self.confirm_frame, bg=PANEL)
+        confirm_buttons.pack(fill="x", padx=12, pady=(0, 10))
+        self._button(confirm_buttons, "Move the call",
+                     self.session.confirm_grab).pack(side="left", expand=True, fill="x", padx=(0, 4))
+        self._button(confirm_buttons, "Stay here",
+                     self.session.decline_grab).pack(side="left", expand=True, fill="x", padx=(4, 0))
+
         self.camera_var = tk.BooleanVar(value=False)
         camera_row = tk.Checkbutton(
             self.root, text="Watch for hand gestures (camera)", variable=self.camera_var,
@@ -220,6 +235,17 @@ class QuackCastApp:
             self.peer_list.insert("end", f" {mark} {peer.name}  ({peer.kind}){offering}")
         if not self.session.peers:
             self.peer_list.insert("end", "  nothing found yet")
+
+        waiting = self.session.pending_confirmation
+        if waiting:
+            page, meeting = waiting
+            named = f"{meeting.service} · {meeting.code}" if meeting.code else meeting.service
+            self.confirm_label.configure(
+                text=f"Move this {named} to another device? It will close here and "
+                     f"you'll leave the call on this PC.")
+            self.confirm_frame.pack(fill="x", padx=20, pady=(10, 0))
+        else:
+            self.confirm_frame.pack_forget()
 
         pending = self.session.pending_trust
         if pending:

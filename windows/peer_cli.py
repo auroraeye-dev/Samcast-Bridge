@@ -65,6 +65,8 @@ def main() -> int:
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--dry-run", action="store_true",
                         help="log incoming links instead of opening them")
+    parser.add_argument("--yes", action="store_true",
+                        help="hand over live meetings without asking")
     parser.add_argument("--kind", default="windowsPC")
     args = parser.parse_args()
 
@@ -83,11 +85,12 @@ def main() -> int:
     )
     hooks = CLIHooks(dry_run=args.dry_run)
     session = BridgeSession(transport, hooks, TrustStore(),
-                            on_event=out, auto_accept=args.auto_accept)
+                            on_event=out, auto_accept=args.auto_accept,
+                            auto_confirm=args.yes)
     transport.start()
 
     out(f"QuackCast bridge — this PC is “{identity.name}”")
-    out("commands: grab [url] · take · list · drop · quit")
+    out("commands: grab [url] · take · yes · no · list · drop · quit")
 
     for line in sys.stdin:
         parts = line.strip().split(maxsplit=1)
@@ -108,6 +111,10 @@ def main() -> int:
                 mark = "trusted" if session.trust.is_trusted(peer.id) else "new"
                 offering = ", offering something" if any(o.id == peer.id for o in session.offers) else ""
                 out(f"  • {peer.name}  [{peer.kind}, {mark}{offering}]")
+        elif command in ("yes", "y"):
+            session.confirm_grab()
+        elif command in ("no", "n"):
+            session.decline_grab()
         elif command in ("drop", "d"):
             session.release()
         elif command in ("quit", "q", "exit"):

@@ -7,7 +7,7 @@
 ![Protocol](https://img.shields.io/badge/protocol-v1-1f6feb?style=flat-square)
 ![macOS](https://img.shields.io/badge/macOS-13%2B-1f6feb?style=flat-square&logo=apple&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-10%2B-0078d4?style=flat-square&logo=windows&logoColor=white)
-![Checks](https://img.shields.io/badge/checks-43%20Swift%20%C2%B7%2038%20Python-2da44e?style=flat-square)
+![Checks](https://img.shields.io/badge/checks-43%20Swift%20%C2%B7%2048%20Python-2da44e?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-8250df?style=flat-square)
 
 </div>
@@ -48,6 +48,14 @@ implements the same wire format from the other end.
 A link genuinely **moves** — the tab closes on the Mac and the real page opens
 on the PC, or the other way round. An app window can only be **mirrored**,
 because a running process cannot leave its machine.
+
+**A live meeting is asked about first.** A misread fist on an ordinary page
+costs a reopened tab; on a Google Meet, Zoom, Teams or Webex call it drops you
+out of the meeting. Those get a prompt, nothing is offered or closed until you
+answer, and doing nothing means no. The rule is shared with the Mac app
+through `QuackCast/docs/meeting-vectors.json`, so both ends agree on what
+counts as a call — negative cases included, because a prompt people learn to
+dismiss unread protects nobody.
 
 ## Try it
 
@@ -105,10 +113,11 @@ fails a test instead of confusing a user.
 
 ```bash
 cd mac && swift run BridgeCheck                       # 43 checks
-cd windows && python -m unittest discover -s tests -t .   # 38 tests
+cd windows && python -m unittest discover -s tests -t .   # 48 tests
 ```
 
-Both suites read `docs/gesture-vectors.json`.
+Both suites read `docs/gesture-vectors.json`, and the meeting-detection tests
+read `QuackCast/docs/meeting-vectors.json` from the sibling checkout.
 
 <details>
 <summary><b>What is verified, and what is not</b></summary>
@@ -122,6 +131,9 @@ Verified by running it, Mac ↔ Python, on one machine:
 - the 5-second expiry: an offer nobody catches is withdrawn and the page stays
 - framing under split and batched reads, and refusal of malformed streams
 - both gesture classifiers agreeing on every shared fixture
+- both meeting detectors agreeing on all 31 shared fixtures, and a live
+  meeting being withheld until confirmed — including the timeout cancelling
+  rather than proceeding
 
 **Not yet run against a real Windows PC.** The Windows-only paths — MediaPipe
 hand tracking, reading Chrome's URL through UI Automation, `mss` window

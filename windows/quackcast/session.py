@@ -23,11 +23,17 @@ import time
 from dataclasses import dataclass
 from typing import Callable, List, Optional
 
+from . import pagerisk
 from .identity import TrustStore
 from .transport import LANTransport, Peer
 
 #: How long a grabbed page waits for someone to take it, in seconds.
 HOLD_TIMEOUT = 5.0
+
+#: How long a "are you sure?" prompt waits before cancelling itself.
+#: Doing nothing must mean no: someone who did not mean to make that gesture
+#: is unlikely to reach for a button.
+CONFIRM_TIMEOUT = 12.0
 
 
 @dataclass
@@ -67,6 +73,7 @@ class BridgeSession:
         on_state: Optional[Callable[[], None]] = None,
         auto_accept: bool = False,
         auto_trust: bool = True,
+        auto_confirm: bool = False,
     ) -> None:
         self.transport = transport
         self.hooks = hooks
@@ -80,6 +87,13 @@ class BridgeSession:
         self.auto_trust = auto_trust
         #: A device waiting for that first approval, if any.
         self.pending_trust: Optional[Peer] = None
+
+        #: When True, a live meeting is handed over without asking. Only the
+        #: headless peer sets this, and only when told to with --yes.
+        self.auto_confirm = auto_confirm
+        #: A page the user is being asked about: (page, MeetingMatch).
+        self.pending_confirmation: Optional[tuple] = None
+        self._confirm_timer: Optional[threading.Timer] = None
 
         self._lock = threading.RLock()
         self.peers: List[Peer] = []
@@ -110,6 +124,17 @@ class BridgeSession:
             self.on_event("Bring a browser window to the front, then make a fist.")
             return
 
+        # Some pages cost far more than a reopened tab if the gesture was
+        # misread. Nothing is offered, closed or timed until this is answered.
+        risk = pagerisk.assess(page.url)
+        if risk.needs_confirmation and not self.auto_confirm:
+            self._ask_before_handing_over(page, risk.meeting)
+            return
+
+        self._begin_handoff(page)
+
+    def _begin_handoff(self, page: Page) -> None:
+        """Commit: offer the page and start the clock that withdraws it."""
         with self._lock:
             self.holding = page
             peers = list(self.peers)
@@ -119,6 +144,53 @@ class BridgeSession:
             self.transport.send("sourceAvailable", peer)
         self.on_event(f"Holding “{page.title or page.url}” — open your hand at another device")
         self.on_state()
+
+    def _ask_before_handing_over(self, page: Page, meeting) -> None:
+        """A live meeting is on screen. Ask first.
+
+        Handing a meeting over is a reasonable thing to want — it moves the
+        call to another device — so this must not block it. It only insists
+        the user meant it, because the cost of being wrong is being dropped
+        from a call in front of other people.
+        """
+        with self._lock:
+            self.pending_confirmation = (page, meeting)
+            if self._confirm_timer:
+                self._confirm_timer.cancel()
+            self._confirm_timer = threading.Timer(CONFIRM_TIMEOUT, self.decline_grab)
+            self._confirm_timer.daemon = True
+            self._confirm_timer.start()
+        named = f"{meeting.service} · {meeting.code}" if meeting.code else meeting.service
+        self.on_event(f"Move this {named} to another device? It will close here.")
+        self.on_state()
+
+    def confirm_grab(self) -> None:
+        with self._lock:
+            waiting = self.pending_confirmation
+            self.pending_confirmation = None
+            if self._confirm_timer:
+                self._confirm_timer.cancel()
+                self._confirm_timer = None
+        if not waiting:
+            return
+        self._begin_handoff(waiting[0])
+
+    def decline_grab(self) -> None:
+        """Nothing was closed, so there is nothing to undo."""
+        with self._lock:
+            waiting = self.pending_confirmation
+            self.pending_confirmation = None
+            if self._confirm_timer:
+                self._confirm_timer.cancel()
+                self._confirm_timer = None
+        if waiting:
+            self.on_event(f"Left your {waiting[1].service} alone.")
+        self.on_state()
+
+    @property
+    def is_asking(self) -> bool:
+        with self._lock:
+            return self.pending_confirmation is not None
 
     def _arm_expiry(self) -> None:
         if self._hold_timer:
@@ -261,6 +333,10 @@ class BridgeSession:
 
     def handle_gesture(self, gesture: str) -> None:
         """Called with a *stable* gesture name from the debouncer."""
+        # A question is already on screen. Answer it with the buttons —
+        # waving again must not stack a second prompt behind the first.
+        if self.is_asking:
+            return
         if gesture == "closedHand":
             self.grab()
         elif gesture == "openHand" and self.has_offer:
