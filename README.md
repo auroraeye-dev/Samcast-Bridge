@@ -12,16 +12,31 @@
 
 </div>
 
+> ### ⚠️ Read this before anything else
+>
+> **The Windows code has never been run on Windows.** It compiles and its
+> logic is tested, but MediaPipe hand tracking, reading Chrome's URL, window
+> capture and the app window itself have only ever been *checked*, never
+> *executed* on that operating system. Expect the first run to find problems.
+>
+> **This does not talk to the [Samcast](https://github.com/auroraeye-dev/Samcast)
+> app.** That app speaks MultipeerConnectivity, which is Apple-only. Only the
+> headless `BridgeCLI` in this repo speaks the cross-platform protocol — so
+> Mac ⇄ Windows today means a terminal on the Mac, not the app with the glow.
+>
+> **Traffic is not encrypted.** Unlike the Apple transport. Use it on a
+> network you control.
+
 ---
 
-## Why this is a separate project
+## Why this exists separately
 
-The main [Samcast](../Samcast) app talks **MultipeerConnectivity**. That is
-a closed Apple framework running over Apple Wireless Direct Link, and a Windows
-PC cannot speak a word of it — not with a library, not with a shim, not at all.
+The main app talks **MultipeerConnectivity** — a closed Apple framework over
+Apple Wireless Direct Link. A Windows PC cannot speak a word of it: not with
+a library, not with a shim, not at all.
 
-So Windows support is not a port of the app. It is a **replacement for the one
-layer that cannot cross**: the transport. Everything above it is unchanged.
+So Windows support is not a port of the app. It is a **replacement for the
+one layer that cannot cross**:
 
 ```
      Apple-only build              this bridge
@@ -33,149 +48,204 @@ layer that cannot cross**: the transport. Everything above it is unchanged.
      Mac · iPad only            Mac · Windows · anything
 ```
 
-The Mac side is ~600 lines of Swift implementing the same `PeerTransport`
-protocol the app already uses, so it is a drop-in: the app above it cannot tell
-which transport it is talking to. The Windows side is a Python app that
-implements the same wire format from the other end.
+The Mac side implements the same `PeerTransport` protocol the app already
+uses, so it is a drop-in. The Windows side implements the same wire format
+from the other end.
 
-## The gestures are the same
+---
 
-| | Gesture | What happens |
-|:--:|---|---|
-| ✊ | **Close your hand** | Grabs the page you're in |
-| 🖐️ | **Open your hand** *at the other machine* | It lands **there** |
+## Install and run
 
-A link genuinely **moves** — the tab closes on the Mac and the real page opens
-on the PC, or the other way round. An app window can only be **mirrored**,
-because a running process cannot leave its machine.
+Both machines must be on the **same Wi-Fi network**, on the **same subnet**.
 
-**A live meeting is asked about first.** A misread fist on an ordinary page
-costs a reopened tab; on a Google Meet, Zoom, Teams or Webex call it drops you
-out of the meeting. Those get a prompt, nothing is offered or closed until you
-answer, and doing nothing means no. The rule is shared with the Mac app
-through `Samcast/docs/meeting-vectors.json`, so both ends agree on what
-counts as a call — negative cases included, because a prompt people learn to
-dismiss unread protects nobody.
+### Step 1 — prove the network works. No dependencies needed.
 
-## Try it
+The headless peer is **pure Python standard library**. Do this before
+installing anything, so a dependency problem can't be mistaken for a network
+problem.
 
-Both machines must be on the same network. Nothing else — no pairing, no
-account, no internet.
+**On Windows**, install **Python 3.11 or 3.12** from
+[python.org](https://www.python.org/downloads/) — tick *"Add python.exe to
+PATH"*. Then:
 
-**On the Mac** (needs the main Samcast checked out beside this one):
-
-```bash
-cd mac && swift run BridgeCLI --gestures
+```
+git clone https://github.com/auroraeye-dev/Samcast-Bridge.git
+cd Samcast-Bridge\windows
+python peer_cli.py --as win-test --verbose
 ```
 
-**On the PC:**
+> **🔥 Windows Firewall will prompt on this first run.** Tick **Private
+> networks** and Allow. If you miss it, **discovery fails silently** — no
+> error, nothing connects, and nothing below will work. This is by far the
+> most likely thing to go wrong.
+
+**On the Mac**, you need the [Samcast](https://github.com/auroraeye-dev/Samcast)
+repo checked out **beside this one** (see [Layout](#layout)):
 
 ```bash
-cd windows
+cd Samcast-Bridge/mac
+swift run BridgeCLI --as mac-test --verbose
+```
+
+Within a few seconds **both** should print:
+
+```
+bridge: discovered mac-test (mac)
+bridge: connected mac-test (mac)
+```
+
+**That is the checkpoint that matters.** If it connects, the protocol works
+on real Windows and everything after is features.
+
+### Step 2 — hand a link across
+
+At either peer, type:
+
+```
+grab https://en.wikipedia.org/wiki/Duck
+```
+
+At the other, type `take`. It opens in that machine's browser. Then reverse
+it.
+
+Commands: `grab [url]` · `take` · `yes` / `no` · `list` · `drop` · `quit`
+
+### Step 3 — the Windows app
+
+```
 pip install -r requirements.txt
 python -m samcast
 ```
 
-Or headless on either side, which is how the two are usually tested:
+Now you get a window, a peer list, the glow, and camera gestures.
+
+If `pip` fails on mediapipe, **carry on anyway** — every Windows dependency
+is imported lazily, so everything except hand gestures still works and the
+app tells you what is missing instead of crashing.
+
+---
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Nothing connects, no errors | **Windows Firewall blocked it** | Allow Python on **Private networks**. Check Settings ▸ Network & Internet ▸ Firewall ▸ Allow an app |
+| Still nothing | Different subnets | `ipconfig` on the PC — the IPv4 address must match the Mac's first three octets. Broadcast does not cross subnets |
+| `pip install` fails on mediapipe | Python 3.13 or 3.14 | MediaPipe has no wheels for those yet. Use **3.11 or 3.12** |
+| `ModuleNotFoundError: _tkinter` | Python without Tk | Reinstall from python.org — Tk ships with it. Or use `peer_cli.py`, which needs no GUI |
+| Camera checkbox does nothing | mediapipe / opencv missing | `pip install -r requirements.txt`. The app reports which module it wants |
+| Grab does nothing in Firefox | Firefox exposes its accessibility tree only on request | Use Chrome or Edge, or enable accessibility in Firefox |
+| Grab does nothing in any browser | `uiautomation` / `pywin32` missing | `pip install -r requirements.txt` |
+| The Mac app can't see the PC | The app speaks MultipeerConnectivity | Expected. Use `BridgeCLI`, not the app |
+| `error: no such module 'SamcastCore'` | The sibling checkout is missing | Clone [Samcast](https://github.com/auroraeye-dev/Samcast) next to this repo |
+| `test_pagerisk` fails | Same reason — it reads shared fixtures from that repo | Clone it, or skip that one test |
+| Peers appear then vanish repeatedly | Two peers sharing an identity | Give each one `--as <name>` |
+
+### Testing two peers on one machine
+
+`--as NAME` gives a throwaway identity, so you can watch the whole exchange
+without a second computer. `--dry-run` logs incoming links instead of opening
+them, so tests don't fill your screen with browser tabs.
 
 ```bash
-python peer_cli.py --verbose
+python peer_cli.py --as alpha --verbose
+python peer_cli.py --as beta --auto-accept --dry-run
 ```
 
-Type `grab <url>`, `take`, `list`, `drop` at either peer. `--as NAME` gives a
-throwaway identity so **two peers can run on one machine** — worth knowing,
-because it means you can watch the whole exchange without a second computer.
+---
 
 ## Layout
 
+The Mac side reuses `SamcastCore` from the main project **by path
+dependency**, so the gesture maths and session rules cannot drift. That means
+the two repos must sit **side by side**:
+
 ```
-docs/PROTOCOL.md          the wire format — the only shared contract
-docs/gesture-vectors.json shared test fixtures, read by BOTH test suites
-
-mac/Sources/QuackBridge/  WireFormat · Sockets · LANTransport
-mac/Sources/BridgeCLI/    headless Mac peer
-mac/Sources/BridgeCheck/  43 protocol conformance checks
-
-windows/samcast/        wire · transport · session · gestures · camera
-                          browser · capture · glow · app
-windows/peer_cli.py       headless Windows peer
-windows/tests/            38 tests
+somewhere/
+├── Samcast/            ← github.com/auroraeye-dev/Samcast
+└── Samcast-Bridge/     ← this repo
 ```
 
-Two things are deliberately *not* duplicated. The Mac side reuses
-`SamcastCore` from the main project by path dependency rather than copying
-it, so the gesture maths and session rules cannot drift. And where a port was
-unavoidable — Python has no access to Swift — both classifiers are checked
-against **the same fixture file**, so a disagreement about what a fist is
-fails a test instead of confusing a user.
+Moving or renaming either folder breaks the Mac build.
+
+```
+docs/PROTOCOL.md           the wire format — the only shared contract
+docs/gesture-vectors.json  shared fixtures, read by BOTH test suites
+
+mac/Sources/QuackBridge/   WireFormat · Sockets · LANTransport
+mac/Sources/BridgeCLI/     headless Mac peer
+mac/Sources/BridgeCheck/   43 protocol conformance checks
+
+windows/samcast/           wire · transport · session · gestures · camera
+                           browser · capture · glow · app
+windows/peer_cli.py        headless Windows peer
+windows/tests/             48 tests
+```
+
+---
 
 ## Checks
 
 ```bash
-cd mac && swift run BridgeCheck                       # 43 checks
-cd windows && python -m unittest discover -s tests -t .   # 48 tests
+cd mac     && swift run BridgeCheck                      # 43 checks
+cd windows && python -m unittest discover -s tests -t .  # 48 tests
 ```
 
-Both suites read `docs/gesture-vectors.json`, and the meeting-detection tests
-read `Samcast/docs/meeting-vectors.json` from the sibling checkout.
+Where a port was unavoidable — Python cannot call Swift — both
+implementations are checked against **the same fixture files**, so a
+disagreement about what a fist is, or what counts as a live meeting, fails a
+test instead of confusing a user.
 
 <details>
 <summary><b>What is verified, and what is not</b></summary>
 
 <br>
 
-Verified by running it, Mac ↔ Python, on one machine:
+**Verified by running it**, Mac ↔ Python on one machine:
 
 - discovery, connection, and a stable link that does not flap
 - a link handed **Mac → PC** and **PC → Mac**, end to end
-- the 5-second expiry: an offer nobody catches is withdrawn and the page stays
+- the 5-second expiry: an offer nobody catches is withdrawn, page stays put
 - framing under split and batched reads, and refusal of malformed streams
 - both gesture classifiers agreeing on every shared fixture
-- both meeting detectors agreeing on all 31 shared fixtures, and a live
-  meeting being withheld until confirmed — including the timeout cancelling
-  rather than proceeding
+- both meeting detectors agreeing on all 31 shared fixtures
 
-**Not yet run against a real Windows PC.** The Windows-only paths — MediaPipe
-hand tracking, reading Chrome's URL through UI Automation, `mss` window
-capture, and the Tk window itself — are written but have never executed on
-Windows, because there isn't one here. Treat the first run on a PC as the real
-test. The protocol layer beneath them *is* tested, which is the part that would
-have been hardest to debug remotely.
-
-</details>
-
-<details>
-<summary><b>⚠️ Security: read this before using it on a network you don't control</b></summary>
-
-<br>
-
-**Traffic is not encrypted.** MultipeerConnectivity encrypted everything for
-free; raw sockets do not. On this bridge, anyone who can watch your LAN can
-read a URL in transit or forge a discovery beacon and impersonate a trusted
-device. **Use it on your own network, not in a café or an airport.** Adding
-TLS with a trust-on-first-use pinned certificate is the top open item, and it
-fixes both problems at once.
-
-What *is* defended:
-
-- **Only `http` and `https` URLs are ever opened**, checked independently on
-  both sides — so a handoff cannot start a program, read a file, or reach a
-  network share. `file:`, `javascript:`, `smb:` and custom app schemes are all
-  refused, and there are tests for each.
-- **Messages are capped at 8 MiB.** Without a cap, one bad length prefix makes
-  the receiver try to allocate 4 GiB.
-- **A connection that never identifies itself is closed after 10 seconds**, so
-  anything on the network that opens a socket cannot accumulate them.
-- **Nothing is installed or elevated.** No service, no driver, no registry
-  keys, no startup entries, no admin rights. State is two JSON files in your
-  own profile directory; deleting the folder removes every trace.
-- **The camera feed never leaves the machine.** Frames are classified in
-  memory and discarded — not recorded, not written to disk, not transmitted.
+**Never run on Windows**: MediaPipe hand tracking, reading Chrome's URL via
+UI Automation, `mss` window capture, and the Tk window. The protocol layer
+beneath them is tested, which is the part that would have been hardest to
+debug remotely.
 
 </details>
 
 ---
 
-<div align="center">
-<sub>MIT licensed · part of <a href="../Samcast">Samcast</a></sub>
-</div>
+## Security
+
+**Traffic is not encrypted.** MultipeerConnectivity encrypted everything for
+free; raw sockets do not. On this bridge, anyone who can watch your LAN can
+read a URL in transit or forge a discovery beacon and impersonate a trusted
+device. **Use it on your own network.** TLS with a trust-on-first-use pinned
+certificate is the top open item and fixes both problems at once.
+
+What *is* defended:
+
+- **Only `http` and `https` URLs are ever opened**, checked independently on
+  both sides — so a handoff cannot start a program, read a file, or reach a
+  network share. `file:`, `javascript:`, `smb:`, UNC paths and custom app
+  schemes are all refused, with tests for each.
+- **Messages are capped at 8 MiB.** Without a cap, one bad length prefix
+  makes the receiver try to allocate 4 GiB.
+- **A connection that never identifies itself is closed after 10 seconds**,
+  so anything on the network that opens a socket cannot accumulate them.
+- **Nothing is installed or elevated.** No service, driver, registry key or
+  startup entry, and no admin rights. State is two JSON files in your own
+  profile directory; deleting the folder removes every trace.
+- **The camera feed never leaves the machine.** Frames are classified in
+  memory and discarded — not recorded, not written to disk, not transmitted.
+
+---
+
+## License
+
+MIT. See [LICENSE](LICENSE). Part of
+**[Samcast](https://github.com/auroraeye-dev/Samcast)**.
