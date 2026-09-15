@@ -1,11 +1,11 @@
-"""Gesture recognition — a faithful port of QuackCastCore's classifier.
+"""Gesture recognition — a faithful port of SamcastCore's classifier.
 
 The Mac and Windows apps must agree on what a fist *is*, or the product
 behaves differently depending on which machine you wave at. This module is
 therefore a deliberate line-by-line port of
 
-    Sources/QuackCastCore/Gesture/GestureClassifier.swift
-    Sources/QuackCastCore/Gesture/GestureDebouncer.swift
+    Sources/SamcastCore/Gesture/GestureClassifier.swift
+    Sources/SamcastCore/Gesture/GestureDebouncer.swift
 
 rather than an independent implementation, and `tests/test_gestures.py`
 checks it against the same cases the Swift suite uses.

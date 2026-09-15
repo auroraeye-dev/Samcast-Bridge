@@ -1,10 +1,10 @@
 import Foundation
 import AppKit
 import QuackBridge
-import QuackCastCore
-import QuackCastPlatform
+import SamcastCore
+import SamcastPlatform
 
-// A headless QuackCast peer for the Mac, speaking the cross-platform bridge
+// A headless Samcast peer for the Mac, speaking the cross-platform bridge
 // protocol. It exists so a Mac ↔ Windows handoff can be developed and tested
 // without building, launching or re-permissioning the GUI app.
 //
@@ -136,7 +136,7 @@ final class BridgePeer: PeerTransportDelegate {
 
     func list() {
         if peers.isEmpty {
-            say("no peers — is the other machine running QuackCast on this network?")
+            say("no peers — is the other machine running Samcast on this network?")
         }
         for peer in peers {
             let mark = trust.isTrusted(peer.id) ? "trusted" : "new"
@@ -245,7 +245,7 @@ final class BridgePeer: PeerTransportDelegate {
 
 let peer = BridgePeer()
 peer.start()
-say("QuackCast bridge — this Mac is “\(peer.name)”")
+say("Samcast bridge — this Mac is “\(peer.name)”")
 say("commands: grab · take · list · drop · quit")
 if useGestures { peer.startGestures() }
 

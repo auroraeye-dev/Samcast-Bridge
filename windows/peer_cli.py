@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Headless QuackCast peer — the Windows counterpart to `swift run BridgeCLI`.
+"""Headless Samcast peer — the Windows counterpart to `swift run BridgeCLI`.
 
 Useful in its own right (a PC with no camera can still receive), and it is how
 the Mac ↔ Windows path is tested without a GUI on either end.
@@ -21,9 +21,9 @@ import threading
 import uuid
 import webbrowser
 
-from quackcast.identity import DeviceIdentity, TrustStore
-from quackcast.session import BridgeSession, Page, PlatformHooks
-from quackcast.transport import LANTransport
+from samcast.identity import DeviceIdentity, TrustStore
+from samcast.session import BridgeSession, Page, PlatformHooks
+from samcast.transport import LANTransport
 
 
 class CLIHooks(PlatformHooks):
@@ -34,7 +34,7 @@ class CLIHooks(PlatformHooks):
         self.staged: Page | None = None
         self.dry_run = dry_run
         try:
-            from quackcast import browser
+            from samcast import browser
             self._browser = browser
         except Exception:
             self._browser = None
@@ -89,7 +89,7 @@ def main() -> int:
                             auto_confirm=args.yes)
     transport.start()
 
-    out(f"QuackCast bridge — this PC is “{identity.name}”")
+    out(f"Samcast bridge — this PC is “{identity.name}”")
     out("commands: grab [url] · take · yes · no · list · drop · quit")
 
     for line in sys.stdin:
@@ -106,7 +106,7 @@ def main() -> int:
         elif command in ("list", "l"):
             peers = session.peers
             if not peers:
-                out("no peers — is the other machine running QuackCast on this network?")
+                out("no peers — is the other machine running Samcast on this network?")
             for peer in peers:
                 mark = "trusted" if session.trust.is_trusted(peer.id) else "new"
                 offering = ", offering something" if any(o.id == peer.id for o in session.offers) else ""

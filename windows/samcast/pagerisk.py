@@ -1,7 +1,7 @@
 """Recognising pages that would do real damage if handed over by accident.
 
-A direct port of `Sources/QuackCastCore/Session/PageRisk.swift`, and checked
-against the same fixture file — `QuackCast/docs/meeting-vectors.json` — so the
+A direct port of `Sources/SamcastCore/Session/PageRisk.swift`, and checked
+against the same fixture file — `Samcast/docs/meeting-vectors.json` — so the
 Mac, iOS and Windows builds cannot disagree about what counts as a call.
 
 The reasoning, from the Swift original: the gesture is never perfectly

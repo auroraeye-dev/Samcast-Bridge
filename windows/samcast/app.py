@@ -1,4 +1,4 @@
-"""The QuackCast window for Windows.
+"""The Samcast window for Windows.
 
 Deliberately Tkinter: it ships with the standard Python installer, so the app
 runs after `pip install -r requirements.txt` without a GUI toolkit download,
@@ -54,7 +54,7 @@ class WindowsHooks(PlatformHooks):
         browser_link.open_url(url)
 
 
-class QuackCastApp:
+class SamcastApp:
     def __init__(self) -> None:
         if tk is None:
             raise SystemExit(
@@ -93,14 +93,14 @@ class QuackCastApp:
 
     def _build_ui(self) -> None:
         self.root = tk.Tk()
-        self.root.title("QuackCast")
+        self.root.title("Samcast")
         self.root.configure(bg=BG)
         self.root.geometry("420x600")
         self.root.minsize(380, 520)
 
         header = tk.Frame(self.root, bg=BG)
         header.pack(fill="x", padx=20, pady=(18, 6))
-        tk.Label(header, text="🦆 QuackCast", bg=BG, fg=TEXT,
+        tk.Label(header, text="Samcast", bg=BG, fg=TEXT,
                  font=("Segoe UI", 18, "bold")).pack(anchor="w")
         tk.Label(header, text=f"this PC is “{self.identity.name}”", bg=BG, fg=MUTED,
                  font=("Segoe UI", 10)).pack(anchor="w")
@@ -308,7 +308,7 @@ class QuackCastApp:
             return
         if self._viewer is None or not self._viewer.winfo_exists():
             self._viewer = tk.Toplevel(self.root)
-            self._viewer.title(f"QuackCast — {peer.name}")
+            self._viewer.title(f"Samcast — {peer.name}")
             self._viewer.configure(bg="black")
             self._viewer_label = tk.Label(self._viewer, bg="black")
             self._viewer_label.pack(fill="both", expand=True)
@@ -327,7 +327,7 @@ class QuackCastApp:
 
 
 def main() -> int:
-    QuackCastApp().run()
+    SamcastApp().run()
     return 0
 
 

@@ -9,7 +9,7 @@ pins them together; this and that file are that pin.
 
 import unittest
 
-from quackcast import wire
+from samcast import wire
 
 
 class Framing(unittest.TestCase):

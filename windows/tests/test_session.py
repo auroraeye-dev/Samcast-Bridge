@@ -1,4 +1,4 @@
-"""The rules a QuackCast peer follows, tested without a camera or a network.
+"""The rules a Samcast peer follows, tested without a camera or a network.
 
 These are the behaviours that matter most, because getting them wrong loses
 somebody's work rather than merely failing:
@@ -15,10 +15,10 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from quackcast import session as session_module
-from quackcast.identity import TrustStore
-from quackcast.session import BridgeSession, Page, PlatformHooks
-from quackcast.transport import Peer
+from samcast import session as session_module
+from samcast.identity import TrustStore
+from samcast.session import BridgeSession, Page, PlatformHooks
+from samcast.transport import Peer
 
 MAC = Peer(id="mac-id", name="swift-heron-1111", kind="mac")
 PC = Peer(id="pc-id", name="teal-lynx-2222", kind="windowsPC")

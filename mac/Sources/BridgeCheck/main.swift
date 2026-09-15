@@ -1,6 +1,6 @@
 import Foundation
 import QuackBridge
-import QuackCastCore
+import SamcastCore
 
 // Dependency-free checks on the wire format, runnable with Command Line Tools
 // alone (`swift run BridgeCheck`). The Python side runs the equivalent suite

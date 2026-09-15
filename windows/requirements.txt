@@ -1,4 +1,4 @@
-# QuackCast for Windows.
+# Samcast for Windows.
 #
 # Tkinter is NOT listed: it ships with the python.org installer. If `import
 # tkinter` fails, reinstall Python from python.org rather than pip-installing

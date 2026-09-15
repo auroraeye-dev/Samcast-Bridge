@@ -1,5 +1,5 @@
 import Foundation
-import QuackCastCore
+import SamcastCore
 #if canImport(Darwin)
 import Darwin
 #else
@@ -159,7 +159,7 @@ public final class LANTransport: PeerTransport {
         guard fd >= 0 else { return false }
         Sock.setOption(fd, SOL_SOCKET, SO_REUSEADDR)
         #if canImport(Darwin)
-        // Lets a second QuackCast on the same machine also bind 50505, which
+        // Lets a second Samcast on the same machine also bind 50505, which
         // is what makes it possible to test two peers on one Mac.
         Sock.setOption(fd, SOL_SOCKET, SO_REUSEPORT)
         #endif

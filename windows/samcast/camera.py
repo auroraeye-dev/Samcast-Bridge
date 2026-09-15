@@ -75,7 +75,7 @@ class HandTracker:
 
         capture = cv2.VideoCapture(self.camera_index, getattr(cv2, "CAP_DSHOW", 0))
         if not capture.isOpened():
-            self.on_status("No camera found. QuackCast still receives without one.")
+            self.on_status("No camera found. Samcast still receives without one.")
             return
 
         # 640×480 is plenty for hand tracking and keeps CPU use modest — this

@@ -1,4 +1,4 @@
-"""Framing and message encoding for the QuackCast bridge protocol.
+"""Framing and message encoding for the Samcast bridge protocol.
 
 This is a direct counterpart to `mac/Sources/QuackBridge/WireFormat.swift`.
 The two files are the whole compatibility surface between the Mac and Windows

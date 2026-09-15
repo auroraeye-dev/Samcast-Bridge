@@ -1,4 +1,4 @@
-# QuackCast Bridge wire protocol — v1
+# Samcast Bridge wire protocol — v1
 
 The Apple-only build talks MultipeerConnectivity, which Windows cannot speak at
 all: it is a closed Apple framework over Apple Wireless Direct Link. Reaching

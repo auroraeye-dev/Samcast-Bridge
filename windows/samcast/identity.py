@@ -1,5 +1,5 @@
 """Persistent device identity and trust — the Windows counterpart to
-QuackCastCore's `DeviceIdentity` and `TrustStore`.
+SamcastCore's `DeviceIdentity` and `TrustStore`.
 
 Both are stored as JSON next to each other in the user's own config
 directory. Nothing is written outside it: no registry keys, no system
@@ -19,13 +19,13 @@ from typing import Dict
 
 
 def config_dir() -> Path:
-    """`%APPDATA%\\QuackCast` on Windows, `~/.config/quackcast` elsewhere.
+    """`%APPDATA%\\Samcast` on Windows, `~/.config/samcast` elsewhere.
 
     The fallback matters: it is what lets the Windows code be developed and
     tested on a Mac.
     """
     appdata = os.environ.get("APPDATA")
-    base = Path(appdata) / "QuackCast" if appdata else Path.home() / ".config" / "quackcast"
+    base = Path(appdata) / "Samcast" if appdata else Path.home() / ".config" / "samcast"
     base.mkdir(parents=True, exist_ok=True)
     return base
 

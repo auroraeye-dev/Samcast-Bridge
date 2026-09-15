@@ -1,6 +1,6 @@
 """Live-meeting detection, against the fixtures the Swift core uses.
 
-The file lives in the main QuackCast checkout because Core is the source of
+The file lives in the main Samcast checkout because Core is the source of
 truth for this rule; the bridge already requires that checkout as a sibling.
 If it is missing the test says so rather than passing quietly — a parity test
 that silently skips is worse than none.
@@ -10,16 +10,16 @@ import json
 import unittest
 from pathlib import Path
 
-from quackcast import pagerisk
+from samcast import pagerisk
 
-VECTORS = Path(__file__).resolve().parents[3] / "QuackCast" / "docs" / "meeting-vectors.json"
+VECTORS = Path(__file__).resolve().parents[3] / "Samcast" / "docs" / "meeting-vectors.json"
 
 
 class SharedVectors(unittest.TestCase):
     def test_every_shared_case(self):
         self.assertTrue(
             VECTORS.exists(),
-            f"shared fixtures not found at {VECTORS} — the main QuackCast "
+            f"shared fixtures not found at {VECTORS} — the main Samcast "
             f"checkout must sit beside this one",
         )
         cases = json.loads(VECTORS.read_text())["cases"]

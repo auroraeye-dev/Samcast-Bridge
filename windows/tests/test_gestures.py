@@ -10,7 +10,7 @@ import json
 import unittest
 from pathlib import Path
 
-from quackcast.gestures import Gesture, GestureClassifier, GestureDebouncer, HandLandmarks
+from samcast.gestures import Gesture, GestureClassifier, GestureDebouncer, HandLandmarks
 
 VECTORS = Path(__file__).resolve().parents[2] / "docs" / "gesture-vectors.json"
 

@@ -1,4 +1,4 @@
-"""What a QuackCast peer *does* — independent of platform and of UI.
+"""What a Samcast peer *does* — independent of platform and of UI.
 
 The transport moves bytes; this decides what a fist and an open hand mean.
 Keeping it here means the Tk app and the headless CLI behave identically, and

@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🦆 QuackCast Bridge
+# Samcast Bridge
 
 ### Mac ⇄ Windows. The same gestures, across the fence.
 
@@ -16,7 +16,7 @@
 
 ## Why this is a separate project
 
-The main [QuackCast](../QuackCast) app talks **MultipeerConnectivity**. That is
+The main [Samcast](../Samcast) app talks **MultipeerConnectivity**. That is
 a closed Apple framework running over Apple Wireless Direct Link, and a Windows
 PC cannot speak a word of it — not with a library, not with a shim, not at all.
 
@@ -53,7 +53,7 @@ because a running process cannot leave its machine.
 costs a reopened tab; on a Google Meet, Zoom, Teams or Webex call it drops you
 out of the meeting. Those get a prompt, nothing is offered or closed until you
 answer, and doing nothing means no. The rule is shared with the Mac app
-through `QuackCast/docs/meeting-vectors.json`, so both ends agree on what
+through `Samcast/docs/meeting-vectors.json`, so both ends agree on what
 counts as a call — negative cases included, because a prompt people learn to
 dismiss unread protects nobody.
 
@@ -62,7 +62,7 @@ dismiss unread protects nobody.
 Both machines must be on the same network. Nothing else — no pairing, no
 account, no internet.
 
-**On the Mac** (needs the main QuackCast checked out beside this one):
+**On the Mac** (needs the main Samcast checked out beside this one):
 
 ```bash
 cd mac && swift run BridgeCLI --gestures
@@ -73,7 +73,7 @@ cd mac && swift run BridgeCLI --gestures
 ```bash
 cd windows
 pip install -r requirements.txt
-python -m quackcast
+python -m samcast
 ```
 
 Or headless on either side, which is how the two are usually tested:
@@ -96,14 +96,14 @@ mac/Sources/QuackBridge/  WireFormat · Sockets · LANTransport
 mac/Sources/BridgeCLI/    headless Mac peer
 mac/Sources/BridgeCheck/  43 protocol conformance checks
 
-windows/quackcast/        wire · transport · session · gestures · camera
+windows/samcast/        wire · transport · session · gestures · camera
                           browser · capture · glow · app
 windows/peer_cli.py       headless Windows peer
 windows/tests/            38 tests
 ```
 
 Two things are deliberately *not* duplicated. The Mac side reuses
-`QuackCastCore` from the main project by path dependency rather than copying
+`SamcastCore` from the main project by path dependency rather than copying
 it, so the gesture maths and session rules cannot drift. And where a port was
 unavoidable — Python has no access to Swift — both classifiers are checked
 against **the same fixture file**, so a disagreement about what a fist is
@@ -117,7 +117,7 @@ cd windows && python -m unittest discover -s tests -t .   # 48 tests
 ```
 
 Both suites read `docs/gesture-vectors.json`, and the meeting-detection tests
-read `QuackCast/docs/meeting-vectors.json` from the sibling checkout.
+read `Samcast/docs/meeting-vectors.json` from the sibling checkout.
 
 <details>
 <summary><b>What is verified, and what is not</b></summary>
@@ -177,5 +177,5 @@ What *is* defended:
 ---
 
 <div align="center">
-<sub>MIT licensed · part of <a href="../QuackCast">QuackCast</a></sub>
+<sub>MIT licensed · part of <a href="../Samcast">Samcast</a></sub>
 </div>

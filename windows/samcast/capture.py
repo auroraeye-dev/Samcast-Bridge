@@ -24,7 +24,7 @@ JPEG_QUALITY = 70
 
 #: Never capture our own window: mirroring a window that is *displaying* the
 #: mirror feeds the stream back into itself and produces an infinite tunnel.
-_OWN_TITLE_MARKERS = ("quackcast",)
+_OWN_TITLE_MARKERS = ("samcast",)
 
 
 @dataclass
