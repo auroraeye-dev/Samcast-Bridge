@@ -1,0 +1,21 @@
+# QuackCast for Windows.
+#
+# Tkinter is NOT listed: it ships with the python.org installer. If `import
+# tkinter` fails, reinstall Python from python.org rather than pip-installing
+# anything — Tk is part of the standard library.
+
+# Hand tracking. MediaPipe reports the same 21 joints in the same order as
+# Apple's Vision framework, which is what lets the gesture classifier be a
+# direct port rather than a rewrite.
+mediapipe>=0.10.9
+opencv-python>=4.9.0
+
+# Reading the focused browser's URL through UI Automation — the Windows
+# equivalent of AppleScript. Read-only, no injection, no extension.
+uiautomation>=2.0.18
+pywin32>=306
+psutil>=5.9
+
+# Window capture and JPEG encoding for mirroring a non-browser window.
+mss>=9.0.1
+Pillow>=10.2.0

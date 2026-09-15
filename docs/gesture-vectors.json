@@ -1,0 +1,382 @@
+{
+  "_comment": "Shared gesture fixtures. Read by BOTH mac/Sources/BridgeCheck and windows/tests/test_gestures.py so the Mac and Windows apps cannot drift apart on what a fist is. Points are normalised 0..1, keyed by the joint numbering both Vision and MediaPipe use (0 = wrist, 8 = index tip, 6 = index PIP, and so on).",
+  "cases": [
+    {
+      "name": "open hand \u2014 all four fingers out",
+      "hand": {
+        "points": {
+          "0": [
+            0.5,
+            0.9
+          ],
+          "6": [
+            0.42,
+            0.6
+          ],
+          "8": [
+            0.42,
+            0.45
+          ],
+          "10": [
+            0.5,
+            0.6
+          ],
+          "12": [
+            0.5,
+            0.45
+          ],
+          "14": [
+            0.58,
+            0.6
+          ],
+          "16": [
+            0.58,
+            0.45
+          ],
+          "18": [
+            0.66,
+            0.6
+          ],
+          "20": [
+            0.66,
+            0.45
+          ]
+        },
+        "confidence": 1.0
+      },
+      "expect": "openHand"
+    },
+    {
+      "name": "fist \u2014 everything curled",
+      "hand": {
+        "points": {
+          "0": [
+            0.5,
+            0.9
+          ],
+          "6": [
+            0.42,
+            0.6
+          ],
+          "8": [
+            0.42,
+            0.68
+          ],
+          "10": [
+            0.5,
+            0.6
+          ],
+          "12": [
+            0.5,
+            0.68
+          ],
+          "14": [
+            0.58,
+            0.6
+          ],
+          "16": [
+            0.58,
+            0.68
+          ],
+          "18": [
+            0.66,
+            0.6
+          ],
+          "20": [
+            0.66,
+            0.68
+          ]
+        },
+        "confidence": 1.0
+      },
+      "expect": "closedHand"
+    },
+    {
+      "name": "peace \u2014 index and middle only",
+      "hand": {
+        "points": {
+          "0": [
+            0.5,
+            0.9
+          ],
+          "6": [
+            0.42,
+            0.6
+          ],
+          "8": [
+            0.42,
+            0.45
+          ],
+          "10": [
+            0.5,
+            0.6
+          ],
+          "12": [
+            0.5,
+            0.45
+          ],
+          "14": [
+            0.58,
+            0.6
+          ],
+          "16": [
+            0.58,
+            0.68
+          ],
+          "18": [
+            0.66,
+            0.6
+          ],
+          "20": [
+            0.66,
+            0.68
+          ]
+        },
+        "confidence": 1.0
+      },
+      "expect": "peace"
+    },
+    {
+      "name": "three fingers is deliberately nothing",
+      "hand": {
+        "points": {
+          "0": [
+            0.5,
+            0.9
+          ],
+          "6": [
+            0.42,
+            0.6
+          ],
+          "8": [
+            0.42,
+            0.45
+          ],
+          "10": [
+            0.5,
+            0.6
+          ],
+          "12": [
+            0.5,
+            0.45
+          ],
+          "14": [
+            0.58,
+            0.6
+          ],
+          "16": [
+            0.58,
+            0.45
+          ],
+          "18": [
+            0.66,
+            0.6
+          ],
+          "20": [
+            0.66,
+            0.68
+          ]
+        },
+        "confidence": 1.0
+      },
+      "expect": "none"
+    },
+    {
+      "name": "one finger is nothing",
+      "hand": {
+        "points": {
+          "0": [
+            0.5,
+            0.9
+          ],
+          "6": [
+            0.42,
+            0.6
+          ],
+          "8": [
+            0.42,
+            0.45
+          ],
+          "10": [
+            0.5,
+            0.6
+          ],
+          "12": [
+            0.5,
+            0.68
+          ],
+          "14": [
+            0.58,
+            0.6
+          ],
+          "16": [
+            0.58,
+            0.68
+          ],
+          "18": [
+            0.66,
+            0.6
+          ],
+          "20": [
+            0.66,
+            0.68
+          ]
+        },
+        "confidence": 1.0
+      },
+      "expect": "none"
+    },
+    {
+      "name": "ring and little only is nothing, not peace",
+      "hand": {
+        "points": {
+          "0": [
+            0.5,
+            0.9
+          ],
+          "6": [
+            0.42,
+            0.6
+          ],
+          "8": [
+            0.42,
+            0.68
+          ],
+          "10": [
+            0.5,
+            0.6
+          ],
+          "12": [
+            0.5,
+            0.68
+          ],
+          "14": [
+            0.58,
+            0.6
+          ],
+          "16": [
+            0.58,
+            0.45
+          ],
+          "18": [
+            0.66,
+            0.6
+          ],
+          "20": [
+            0.66,
+            0.45
+          ]
+        },
+        "confidence": 1.0
+      },
+      "expect": "none"
+    },
+    {
+      "name": "index and ring is not peace",
+      "hand": {
+        "points": {
+          "0": [
+            0.5,
+            0.9
+          ],
+          "6": [
+            0.42,
+            0.6
+          ],
+          "8": [
+            0.42,
+            0.45
+          ],
+          "10": [
+            0.5,
+            0.6
+          ],
+          "12": [
+            0.5,
+            0.68
+          ],
+          "14": [
+            0.58,
+            0.6
+          ],
+          "16": [
+            0.58,
+            0.45
+          ],
+          "18": [
+            0.66,
+            0.6
+          ],
+          "20": [
+            0.66,
+            0.68
+          ]
+        },
+        "confidence": 1.0
+      },
+      "expect": "none"
+    },
+    {
+      "name": "low confidence is never classified",
+      "hand": {
+        "points": {
+          "0": [
+            0.5,
+            0.9
+          ],
+          "6": [
+            0.42,
+            0.6
+          ],
+          "8": [
+            0.42,
+            0.45
+          ],
+          "10": [
+            0.5,
+            0.6
+          ],
+          "12": [
+            0.5,
+            0.45
+          ],
+          "14": [
+            0.58,
+            0.6
+          ],
+          "16": [
+            0.58,
+            0.45
+          ],
+          "18": [
+            0.66,
+            0.6
+          ],
+          "20": [
+            0.66,
+            0.45
+          ]
+        },
+        "confidence": 0.2
+      },
+      "expect": "none"
+    },
+    {
+      "name": "KNOWN QUIRK: a hand whose wrist was not detected reads as a fist, because zero fingers can be shown to be extended",
+      "hand": {
+        "points": {
+          "8": [
+            0.4,
+            0.4
+          ],
+          "6": [
+            0.4,
+            0.6
+          ]
+        },
+        "confidence": 1.0
+      },
+      "expect": "closedHand"
+    }
+  ]
+}
