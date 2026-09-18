@@ -58,6 +58,22 @@ from the other end.
 
 Both machines must be on the **same Wi-Fi network**, on the **same subnet**.
 
+### Step 0 — ask the machine what it can do
+
+```
+python doctor.py
+```
+
+Checks the Python version against MediaPipe's available wheels, every
+dependency grouped by the feature it enables, whether the camera can
+actually produce a frame, this machine's address, and whether UDP 50505 is
+free — then separates the failures that stop it working from the ones that
+only cost features.
+
+Worth running first. This half cannot be debugged from the machine it was
+developed on, so "it didn't work" is not something anyone can act on
+remotely; this turns it into a list.
+
 ### Step 1 — prove the network works. No dependencies needed.
 
 The headless peer is **pure Python standard library**. Do this before
@@ -139,6 +155,7 @@ app tells you what is missing instead of crashing.
 | `pip install` fails on mediapipe | Python 3.13 or 3.14 | MediaPipe has no wheels for those yet. Use **3.11 or 3.12** |
 | `ModuleNotFoundError: _tkinter` | Python without Tk | Reinstall from python.org — Tk ships with it. Or use `peer_cli.py`, which needs no GUI |
 | Camera checkbox does nothing | mediapipe / opencv missing | `pip install -r requirements.txt`. The app reports which module it wants |
+| Camera still won't open | Another app holds it, or Windows privacy | Close Teams/Zoom/Camera. Settings ▸ Privacy & security ▸ Camera ▸ *Let desktop apps access your camera*. Run `python doctor.py` — it tries every index and backend and says which worked |
 | Grab does nothing in Firefox | Firefox exposes its accessibility tree only on request | Use Chrome or Edge, or enable accessibility in Firefox |
 | Grab does nothing in any browser | `uiautomation` / `pywin32` missing | `pip install -r requirements.txt` |
 | The Mac app can't see the PC | The app speaks MultipeerConnectivity | Expected. Use `BridgeCLI`, not the app |
