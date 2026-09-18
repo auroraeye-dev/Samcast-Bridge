@@ -63,6 +63,43 @@ class HandTracker:
         self.hand_visible = False
         self.live_gesture = Gesture.NONE
 
+    def _open_camera(self, cv2):
+        """Find a working camera, and report what was tried.
+
+        Windows needs this where macOS does not. DirectShow and Media
+        Foundation each fail on machines where the other works, and a
+        built-in camera is not reliably index 0 — a docked laptop or a
+        virtual camera from conferencing software can take that slot. Trying
+        one combination and reporting "no camera found" is wrong on a machine
+        that plainly has one.
+        """
+        backends = []
+        for name in ("CAP_DSHOW", "CAP_MSMF", "CAP_AVFOUNDATION", "CAP_V4L2"):
+            value = getattr(cv2, name, None)
+            if value is not None:
+                backends.append((name, value))
+        backends.append(("default", 0))
+
+        indices = [self.camera_index] + [i for i in range(3) if i != self.camera_index]
+        tried = []
+        for index in indices:
+            for name, backend in backends:
+                tried.append(f"{index}/{name}")
+                try:
+                    capture = cv2.VideoCapture(index, backend)
+                except Exception:
+                    continue
+                if capture.isOpened():
+                    # Opening can succeed while reading fails — a camera held
+                    # by another app often behaves exactly like this.
+                    ok, _ = capture.read()
+                    if ok:
+                        return capture, f"index {index}, {name}"
+                    capture.release()
+                else:
+                    capture.release()
+        return None, ", ".join(tried[:6]) + (" and others" if len(tried) > 6 else "")
+
     def _loop(self) -> None:
         try:
             import cv2
@@ -73,10 +110,19 @@ class HandTracker:
             )
             return
 
-        capture = cv2.VideoCapture(self.camera_index, getattr(cv2, "CAP_DSHOW", 0))
-        if not capture.isOpened():
-            self.on_status("No camera found. Samcast still receives without one.")
+        capture, how = self._open_camera(cv2)
+        if capture is None:
+            # Say what was actually tried. "No camera found" on a laptop with
+            # a camera is a dead end for the person reading it.
+            self.on_status(
+                "Couldn't open a camera. Tried " + how + ". "
+                "Check nothing else is using it, and that Windows camera "
+                "access is on for desktop apps "
+                "(Settings > Privacy & security > Camera). "
+                "Samcast still receives links without a camera."
+            )
             return
+        self.on_status(f"Camera opened ({how})")
 
         # 640×480 is plenty for hand tracking and keeps CPU use modest — this
         # runs continuously in the background, so it must not cost much.
